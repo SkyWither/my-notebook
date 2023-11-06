@@ -1,0 +1,1 @@
+Gnome使用C语言，KDE使用C++

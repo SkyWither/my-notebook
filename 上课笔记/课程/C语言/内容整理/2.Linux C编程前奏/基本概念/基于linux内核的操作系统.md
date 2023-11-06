@@ -1,0 +1,1 @@
+Debian, SuSE, Gentoo, RedHat 和 Mandriva，当然还有Ubuntu

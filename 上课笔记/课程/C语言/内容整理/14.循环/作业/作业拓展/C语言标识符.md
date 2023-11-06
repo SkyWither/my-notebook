@@ -1,0 +1,1 @@
+_标识符_是数字、下划线、小写及大写拉丁字母和以 `\u` 及 `\U` [转义](https://zh.cppreference.com/w/c/language/escape "c/language/escape")记号指定的 Unicode 字符 (C99 起)的任意长度序列。合法的标识符必须以非数字字符（拉丁字母、下划线或 Unicode 非数字字符 (C99 起)）开始。标识符大小写有别（小写和大写字母不同）。

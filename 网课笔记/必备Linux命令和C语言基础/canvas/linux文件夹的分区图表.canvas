@@ -1,0 +1,39 @@
+{
+	"nodes":[
+		{"id":"ad92fac94907c996","type":"text","text":"5G","x":-240,"y":-200,"width":250,"height":60},
+		{"id":"292ccbf896474a19","type":"text","text":"2000MB","x":10,"y":-200,"width":250,"height":60},
+		{"id":"97d5af724effd026","type":"text","text":"200MB","x":260,"y":-200,"width":250,"height":60},
+		{"id":"3eda76e16e20faba","type":"text","text":"--G","x":510,"y":-200,"width":250,"height":60},
+		{"id":"404ae62ae6759aad","type":"text","text":"C盘","x":-240,"y":-260,"width":250,"height":60},
+		{"id":"065a74bbf8d98596","type":"text","text":"D盘","x":10,"y":-260,"width":250,"height":60},
+		{"id":"c46da47c34e31e43","type":"text","text":"E盘","x":260,"y":-260,"width":250,"height":60},
+		{"id":"47b7a168b6b94219","type":"text","text":"F盘","x":510,"y":-260,"width":250,"height":60},
+		{"id":"6372a8be0e1f1273","type":"text","text":"/","x":-240,"y":-140,"width":250,"height":60},
+		{"id":"c7de0c5701ba48b6","type":"text","text":"swap area","x":10,"y":-140,"width":250,"height":60},
+		{"id":"770f55576333d16d","type":"text","text":"/boot","x":260,"y":-140,"width":250,"height":60},
+		{"id":"bba39abc28884b2b","type":"text","text":"/home","x":510,"y":-140,"width":250,"height":60},
+		{"id":"27caea697ae8c4e7","type":"text","text":"/","x":231,"y":120,"width":59,"height":60},
+		{"id":"76eae705508a9888","type":"text","text":"boot","x":113,"y":260,"width":105,"height":60},
+		{"id":"0ec4bdbcae69552c","type":"text","text":"User","x":-65,"y":260,"width":105,"height":60},
+		{"id":"4d31085ca14d0446","type":"text","text":"etc","x":465,"y":260,"width":105,"height":60},
+		{"id":"5d4dae79e226712e","type":"text","text":"home","x":290,"y":260,"width":105,"height":60},
+		{"id":"b35daa6ff7b4f808","type":"text","text":"U1","x":214,"y":400,"width":105,"height":60},
+		{"id":"d5bae0f1d96c011f","type":"text","text":"U2","x":360,"y":400,"width":105,"height":60},
+		{"id":"3b6238e38eb9951c","type":"text","text":"tmp\n主要存放一些临时文件","x":-115,"y":20,"width":250,"height":50},
+		{"id":"1d244e0700fc3a5c","type":"text","text":"opt\n主要存放一些第三方软件","x":188,"y":20,"width":250,"height":50},
+		{"id":"2a6fc4f3cec82b02","type":"text","text":"user\n主要存放系统软件","x":-645,"y":20,"width":200,"height":50},
+		{"id":"56a32443876854be","type":"text","text":"var\n主要存放一些可变数据","x":-395,"y":20,"width":250,"height":50}
+	],
+	"edges":[
+		{"id":"1e79fec3d7c081bb","fromNode":"27caea697ae8c4e7","fromSide":"bottom","toNode":"76eae705508a9888","toSide":"top"},
+		{"id":"3e560e0a5c4c9a6a","fromNode":"27caea697ae8c4e7","fromSide":"bottom","toNode":"0ec4bdbcae69552c","toSide":"top"},
+		{"id":"47f7dc734533fdee","fromNode":"27caea697ae8c4e7","fromSide":"bottom","toNode":"4d31085ca14d0446","toSide":"top"},
+		{"id":"217255015f1f6de5","fromNode":"27caea697ae8c4e7","fromSide":"bottom","toNode":"5d4dae79e226712e","toSide":"top"},
+		{"id":"beeb608f47853bff","fromNode":"5d4dae79e226712e","fromSide":"bottom","toNode":"b35daa6ff7b4f808","toSide":"top"},
+		{"id":"b85e4052b0010dfd","fromNode":"5d4dae79e226712e","fromSide":"bottom","toNode":"d5bae0f1d96c011f","toSide":"top"},
+		{"id":"c0044cb5204d4a20","fromNode":"6372a8be0e1f1273","fromSide":"bottom","toNode":"2a6fc4f3cec82b02","toSide":"top"},
+		{"id":"dade4df50b0d83c2","fromNode":"6372a8be0e1f1273","fromSide":"bottom","toNode":"56a32443876854be","toSide":"top"},
+		{"id":"2d17e03bcf19d171","fromNode":"6372a8be0e1f1273","fromSide":"bottom","toNode":"3b6238e38eb9951c","toSide":"top"},
+		{"id":"af78fb0ef69c7113","fromNode":"6372a8be0e1f1273","fromSide":"bottom","toNode":"1d244e0700fc3a5c","toSide":"top"}
+	]
+}
