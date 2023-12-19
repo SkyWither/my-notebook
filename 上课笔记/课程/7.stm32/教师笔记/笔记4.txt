@@ -1,0 +1,270 @@
+
+前一天作业：
+
+1. 说出GPIO以寄存器方式的配置步骤
+
+   ---- 打开时钟。RCC 中相关时钟使能寄存器，查询这个寄存器的地址（基地址+偏移地址）
+        
+		RCC 寄存器起始地址：0x4002 1000
+		RCC_APB2ENR 寄存器偏移地址：0x18
+		RCC_APB2ENR 寄存器的地址：0x40021000 + 0x18 = 0x40021018
+		将地址整数值转换为可访问的内存：
+		
+		#define RCC_APB2ENR (*((volatile uint32_t *) (0x40021000 + 0x18)))
+		
+		打开 GPIOC 时钟，即对 RCC_APB2ENR 的 [4] 位置 1：
+		
+		RCC_APB2ENR |= 1 << 4;
+		
+   ---- 配置 IO 口（输入、输出模式）
+   
+        配置 PC9 为通用推挽输出
+		
+		GPIOC 寄存器起始地址：0x4001 1000
+		配置寄存器有两个：CRH 和 CRL，根据 IO 口编号确定，IO0 ~ IO7 使用 CRL，
+		IO8 ~ IO15 使用 CRH。因此 PC9 使用 GPIOC 的 CRH 寄存器进行配置。
+		GPIOC_CRH 寄存器偏移地址：0x04
+		GPIOC_CRH 寄存器地址：0x40011000 + 0x04 = 0x40011004
+		将地址整数值转换为可访问的内存：
+		
+		#define GPIOC_CRH (*((volatile uint32_t *) (0x40011000 + 0x04)))
+		
+		PC9 在 GPIOC_CRH 中的 [7:4] 位配置。根据寄存器的描述确定配置为 0b0011。
+		如何将 GPIOC_CRH[7:4] 配置为 0b0011？
+		
+		先清 0 这 4 个位，再将其赋值为 0b0011。
+		
+		GPIOC_CRH &= ~(0xF << 4);   // 清 0
+		GPIOC_CRH |= 0x3 << 4;      // 赋值
+		
+   ---- 通过 IDR 读取数据，通过 ODR 写数据，或通过 BSRR 和 BRR 写数据
+   
+        IDR  寄存器地址：0x40011000 + 0x08
+		ODR  寄存器地址：0x40011000 + 0x0C
+		BSRR 寄存器地址：0x40011000 + 0x10
+		BRR  寄存器地址：0x40011000 + 0x14
+		
+		#define CPIOC_IDR  (*((volatile uint32_t *) (0x40011000 + 0x08)))
+		#define CPIOC_ODR  (*((volatile uint32_t *) (0x40011000 + 0x0C)))
+		#define CPIOC_BSRR (*((volatile uint32_t *) (0x40011000 + 0x10)))
+		#define CPIOC_BRR  (*((volatile uint32_t *) (0x40011000 + 0x14)))
+		
+		定义打开关闭蜂鸣器的宏：
+		
+		#define BEEP_ON()  GPIOC_ODR &= ~(1 << 9)  // 对 ODR[9] 清 0
+		#define BEEP_OFF() GPIOC_ODR |= 1 << 9     // 对 ODR[9] 置 1
+		
+		#define BEEP_ON()  GPIOC_BSRR |= 1 << 25    // 对 ODR[9] 清 0
+		#define BEEP_OFF() GPIOC_BSRR |= 1 << 9     // 对 ODR[9] 置 1
+		
+		#define BEEP_ON()  GPIOC_BRR |= 1 << 9      // 对 ODR[9] 清 0
+
+2. 使用寄存器方式实现蜂鸣器
+
+   ---- 参考示例代码
+
+3. 什么是复用功能？
+
+   ---- 复用功能是指除了 GPIO 端口之外其他外设使用 IO 口进行数据传输。
+        为解决 IO 资源不足采取的方法。即一个引脚提供了多种功能。
+		在数据手册中可以查询每个 IO 口可以复用哪些功能。
+
+4. 使用寄存器方式实现 LED R 流水灯
+
+   ---- 参考示例代码，修改蜂鸣器的 IO 口为 LED R 的 IO 口。
+
+5. 解释开漏输出，以及开漏实现 "线与" 功能
+
+   ---- 参考图解
+
+6. 解释推挽输出
+
+   ---- 参考图解
+
+=================================================================================
+
+1. GPIO 常用 API
+
+   注意，使用标准库并不是不操作寄存器了，而是标准库将对寄存器的操作封装在各个函数中了，
+   开发者可以不直接操作寄存器。
+   
+// 初始化
+void GPIO_Init(GPIO_TypeDef* GPIOx, GPIO_InitTypeDef* GPIO_InitStruct);
+
+// 读 IDR
+uint8_t GPIO_ReadInputDataBit(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+uint16_t GPIO_ReadInputData(GPIO_TypeDef* GPIOx);
+
+// 读 ODR
+uint8_t GPIO_ReadOutputDataBit(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+uint16_t GPIO_ReadOutputData(GPIO_TypeDef* GPIOx);
+
+// 写 ODR
+void GPIO_SetBits(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);    // 多个 IO 口置 1
+void GPIO_ResetBits(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);  // 多个 IO 口清 0
+void GPIO_WriteBit(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, BitAction BitVal); // 对指定的某个位清 0 或置 1
+void GPIO_Write(GPIO_TypeDef* GPIOx, uint16_t PortVal);  // 将 16 个 IO 口的值写入端口
+
+// 复用功能重映射
+void GPIO_PinRemapConfig(uint32_t GPIO_Remap, FunctionalState NewState);
+
+// 外部中断配置
+void GPIO_EXTILineConfig(uint8_t GPIO_PortSource, uint8_t GPIO_PinSource);
+
+2. 模式枚举类型
+
+typedef enum
+{ GPIO_Mode_AIN = 0x0,           // 模拟输入
+  GPIO_Mode_IN_FLOATING = 0x04,  // 浮空输入
+  GPIO_Mode_IPD = 0x28,          // 下拉输入
+  GPIO_Mode_IPU = 0x48,          // 上拉输入
+  GPIO_Mode_Out_OD = 0x14,       // 通用开漏输出
+  GPIO_Mode_Out_PP = 0x10,       // 通用推挽输出
+  GPIO_Mode_AF_OD = 0x1C,        // 复用功能开漏输出
+  GPIO_Mode_AF_PP = 0x18         // 复用功能推挽输出
+}GPIOMode_TypeDef;
+
+3. 复用功能重映射
+
+   当一个外设的默认 IO 口被其他的外设占用时，可以重新选择另外的 IO 口来完成其功能，
+   称为 "复用功能重映射"。
+   
+   复用功能重映射使得一个功能可以由多个 IO 口来实现。
+   复用功能则是一个 IO 口可以实现不同外设的功能。
+   
+   IO 口与功能之间是多对多的关系。
+
+   复用功能和复用功能重映射使 IO 口的功能配置更加灵活。
+
+4. 位段
+
+   Cortex-M3 有两个位段区域：
+   
+   内存区域：0x20000000-0x200FFFFF 别名区域：0x22000000-0x23FFFFFF
+   外设区域：0x40000000-0x400FFFFF 别名区域：0x42000000-0x43FFFFFF
+   
+   他们之间的起始地址相差：0x02000000。
+   位段区域大小为 1MB，别名区域大小为 32MB。
+   
+   向别名区域的一个字写 0 或 1，会写到位段区域中的一个位。
+
+   位段别名区域映射到位段区域的公式：
+   
+   bit_word_addr = bit_band_base + (byte_offset x 32) + (bit_number × 4) 
+
+   其中： 
+   bit_word_addr 是别名存储器区中字的地址，它映射到某个目标位。 
+   bit_band_base 是别名区的起始地址。 
+   byte_offset   是包含目标位的字节在位段里的序号 
+   bit_number    是目标位所在位置(0-31) 
+   
+5. 启动配置
+
+   在STM32F10xxx里，可以通过BOOT[1:0]引脚选择三种不同启动模式。
+
+   启动模式选择管脚 
+    BOOT1 BOOT0      启动模式        说明 
+      X     0        用户闪存存储器  起始地址 0x08000000
+      0     1        系统存储器      起始地址 0x1FFFF000，生产线上就烧录了代码
+      1     1        内嵌SRAM        0x20000000
+
+   用户闪存存储器和系统存储器启动时，起始地址都映射到 0x00000000，
+   CPU 始终从 0 地址开始运行。即将 0 地址处的栈顶指针保存 SP 寄存器，
+   从 4 地址处读取复位处理函数地址保存到 PC 寄存器，从而实现跳转到复位处理函数执行。
+
+   但从内嵌SRAM执行时则是从 0x20000000 处开始执行。
+
+   当使用 ISP 方式烧录时，BOOT0 = 1，BOOT1 = 0，运行系统存储器中的程序，从串口1读取
+   程序文件内容，写入用户闪存存储器。
+
+   查数据手册得，BOOT1 和 PB2 是同一引脚。原理图中没有标明 BOOT1，而 PB2 直接接地，
+   因此只支持前两种启动模式。
+
+6. 启动流程
+
+   从 0 地址读取栈顶指针存入 SP 寄存器，从 4 地址读取复位处理函数到 PC 寄存器，跳转到
+   复位处理函数执行，在复位处理函数中，先调用 SystemInit() 函数进行系统初始化，然后返
+   回，再调用 main() 函数，永不返回，因此 main() 中必须无限循环。
+   
+   在 SystemInit() 中先选择 HSI 作为系统时钟源，然后调用 SetSysClock() 函数设置时钟，
+   而 SetSysClock() 函数是调用 SetSysClockTo72() 来进行真正的系统时钟设置。
+   
+7. 复位
+
+   STM32F10xxx支持三种复位形式，分别为系统复位、电源复位和备份区域复位。
+
+   系统复位将复位除 "时钟控制寄存器CSR中的复位标志" 和 "备份区域中的寄存器" 以外的所有寄存器。 
+   当以下事件中的一件发生时，产生一个系统复位： 
+   1. NRST管脚上的低电平(外部复位) 
+   2. 窗口看门狗计数终止(WWDG复位) 
+   3. 独立看门狗计数终止(IWDG复位) 
+   4. 软件复位(SW复位) 
+   5. 低功耗管理复位 
+   可通过查看RCC_CSR控制状态寄存器中的复位状态标志位识别复位事件来源。 
+   
+   软件复位 
+   通过将Cortex™-M3中断应用和复位控制寄存器(SCB_AIRCR)中的SYSRESETREQ位置’1’，可实现软件复位。
+   
+   低功耗管理复位 
+   在以下两种情况下可产生低功耗管理复位： 
+   1. 在 "进入待机模式" 时产生低功耗管理复位： 
+      通过将用户选择字节中的nRST_STDBY位置’1’将使能该复位。这时，即使执行了进入待机
+      模式的过程，系统将被复位而不是进入待机模式。 
+   2. 在 "进入停止模式" 时产生低功耗管理复位： 
+      通过将用户选择字节中的nRST_STOP位置’1’将使能该复位。这时，即使执行了进入停机模
+      式的过程，系统将被复位而不是进入停机模式。 
+
+   标准库中的软件复位函数：
+   
+static __INLINE void NVIC_SystemReset(void)
+{
+  SCB->AIRCR  = ((0x5FA << SCB_AIRCR_VECTKEY_Pos)      |   // 高 16 位必须写入 0x5FA 才能写入
+                 (SCB->AIRCR & SCB_AIRCR_PRIGROUP_Msk) |   // 读取原来的 PRIGROUP 域优先级分组，即保持优先级分组不变
+                 SCB_AIRCR_SYSRESETREQ_Msk);  // 请求系统复位
+  __DSB();  // 插入内存屏障，确保前面的内在访问结束，才执行后续语句            
+  while(1); // 等待系统复位
+}
+
+#define SCB_AIRCR_VECTKEY_Pos              16 
+
+#define SCB_AIRCR_PRIGROUP_Pos              8
+#define SCB_AIRCR_PRIGROUP_Msk             (7ul << SCB_AIRCR_PRIGROUP_Pos)
+
+#define SCB_AIRCR_SYSRESETREQ_Pos           2
+#define SCB_AIRCR_SYSRESETREQ_Msk          (1ul << SCB_AIRCR_SYSRESETREQ_Pos)
+
+   当以下事件中之一发生时，产生电源复位： 
+   1. 上电/掉电复位(POR/PDR复位) 
+   2. 从待机模式中返回 
+   电源复位将复位除了 "备份区域" 外的所有寄存器。
+
+   当以下事件中之一发生时，产生备份区域复位。 
+   1. 软件复位，备份区域复位可由设置备份区域控制寄存器RCC_BDCR中的BDRST位产生。 
+   2. 在VDD和VBAT两者掉电的前提下，VDD或VBAT上电将引发备份区域复位。
+   备份域复位只影响备份区域。 
+
+=================================================================================
+
+作业：
+
+1. volatile 的作用？
+
+2. 标准库方式是不是不用操作寄存器？
+
+3. 复用和重映射的区别？
+
+4. 使用标准库方式实现 LED G 流水灯
+
+5. 启动模式有哪些？
+
+6. 原理图中找不到 boot0 或 boot1 时怎么办？
+
+7. STM32F103RC 有哪几种复位方式？各自复位哪些寄存器？各自引发的条件有哪些？
+
+8. 如何实现系统复位的软件复位？
+
+
+
+
+
+
